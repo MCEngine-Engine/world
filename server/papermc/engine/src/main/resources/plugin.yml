@@ -1,0 +1,6 @@
+name: MCEngineWorld
+version: ${version}
+main: io.github.mcengine.papermc.world.engine.MCEngineWorldPaperMC
+author: MCEngine
+description: MCEngine World
+api-version: '1.13'

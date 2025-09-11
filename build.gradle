@@ -1,0 +1,122 @@
+plugins {
+    id 'com.gradleup.shadow' version '9.1.0'
+    id 'java'
+}
+
+// Set project version using a property, defaulting to 'unspecified' if not found
+version = project.properties[project.name + '.version']
+group = 'io.github.mcengine'
+
+ext {
+    // User
+    user_git_name = System.getenv('USER_GIT_NAME')
+
+    // GitHub
+    user_github_token = System.getenv('USER_GITHUB_TOKEN')
+
+    // Organization
+    organization_name = System.getenv('ORGANIZATION_NAME') ?: 'MCEngine-Engine'
+    organization_token = System.getenv('ORGANIZATION_TOKEN')
+
+    // Repository
+    repository_name = System.getenv('REPOSITORY_NAME') ?: 'world'
+    repository_token = System.getenv('REPOSITORY_TOKEN')
+
+    /* Project Information */
+    jarName = System.getenv('PROJECT_NAME') ?: 'MCEngineWorld'
+}
+
+allprojects {
+    group = 'io.github.mcengine'
+
+    apply plugin: 'java'
+    apply plugin: 'com.gradleup.shadow'
+
+    repositories {
+        ext.configureGitHubRepo = { repoName, repoUrl ->
+            maven {
+                name = repoName
+                url = uri(repoUrl)
+                credentials {
+                    username = project.user_git_name
+                    password = project.user_github_token ?: project.repository_token ?: project.organization_token
+                }
+            }
+        }
+
+        configureGitHubRepo('MCEngine Core API', 'https://maven.pkg.github.com/MCEngine-API/core')
+
+        configureGitHubRepo('MCEngine World API', 'https://maven.pkg.github.com/MCEngine-API/world')
+
+        configureGitHubRepo('MCEngine World Common', 'https://maven.pkg.github.com/MCEngine-Common/world')
+
+        mavenCentral()
+        mavenLocal()
+
+        maven {
+            url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots'
+            content {
+                includeGroup 'org.bukkit'
+                includeGroup 'org.spigotmc'
+            }
+        }
+
+        maven {
+            name = "papermc"
+            url = 'https://repo.papermc.io/repository/maven-public/'
+        }
+
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url 'https://oss.sonatype.org/content/repositories/central' }
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'com.gradleup.shadow'
+
+    version = project.findProperty("mcengine-${repository_name}.version")
+
+    tasks.named('jar').configure {
+        enabled = false
+    }
+
+    tasks.named('shadowJar').configure {
+        archiveClassifier = null
+    }
+
+    afterEvaluate {
+        def serverPlatforms = ['spigotmc', 'papermc']
+        serverPlatforms.each { platform ->
+            if (project.path == ":server:${platform}:engine") {
+                def platformDir = rootProject.file("server/${platform}")
+                if (platformDir.exists()) {
+                    dependencies {
+                        // Add versioned platform projects with 'shadow' configuration
+                        platformDir.eachDir { versionDir ->
+                            if (versionDir.name != 'engine') {
+                                def versionPath = ":server:${platform}:${versionDir.name}"
+                                def versionProject = project.findProject(versionPath)
+                                if (versionProject != null) {
+                                    implementation project(path: versionPath, configuration: "shadow")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+shadowJar {
+    version = version
+    archiveClassifier = null
+    archiveBaseName = project.jarName
+}
+
+tasks.named('jar').configure {
+    enabled = false
+}
+
+build.dependsOn(shadowJar)

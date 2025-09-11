@@ -1,0 +1,28 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    compileOnly 'org.spigotmc:spigot-api:1.21.8-R0.1-SNAPSHOT'
+
+    implementation 'io.github.mcengine:core-api:2025.0.9-11'
+
+    implementation 'io.github.mcengine:world-api:2025.0.9-0'
+
+    implementation 'io.github.mcengine:world-common:2025.0.9-0'
+}
+
+processResources {
+    def props = [version: version]
+    inputs.properties(props)
+    filteringCharset 'UTF-8'
+    filesMatching('plugin.yml') {
+        expand(props)
+    }
+}
+
+shadowJar {
+    archiveBaseName = "${project.jarName}-SpigotMC"
+}
+
+build.dependsOn shadowJar
