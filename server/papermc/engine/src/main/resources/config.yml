@@ -1,0 +1,10 @@
+enable: false
+license: free
+
+# Database support
+# - SQLite
+database:
+  type: sqlite
+
+  sqlite:
+    path: world.db

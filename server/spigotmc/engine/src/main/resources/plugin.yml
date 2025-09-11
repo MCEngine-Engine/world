@@ -1,0 +1,6 @@
+name: MCEngineWorld
+version: ${version}
+main: io.github.mcengine.spigotmc.world.engine.MCEngineWorldSpigotMC
+author: MCEngine
+description: MCEngine World
+api-version: '1.13'
