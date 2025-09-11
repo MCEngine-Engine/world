@@ -7,9 +7,9 @@ dependencies {
 
     implementation 'io.github.mcengine:core-api:2025.0.9-11'
 
-    implementation 'io.github.mcengine:world-api:2025.0.9-0'
+    implementation 'io.github.mcengine:world-api:2025.0.9-11'
 
-    implementation 'io.github.mcengine:world-common:2025.0.9-0'
+    implementation 'io.github.mcengine:world-common:2025.0.9-11'
 }
 
 processResources {
